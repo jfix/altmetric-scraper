@@ -3,69 +3,104 @@ const puppeteer = require('puppeteer')
 const moment = require('moment')
 const cheerio = require('cheerio')
 const fs = require('fs')
+const path = require('path')
 
-const results = []
+let results = []
 const toDate = moment().subtract(1, 'days') // if this is run around midnight ...
-const fromDate = toDate.clone().subtract(2, 'days')
-const url = `${process.env.URL}?mentioned_after=${fromDate.format('YYYY-MM-DD')}&mentioned_before=${toDate.format('YYYY-MM-DD')}`
+const fromDate = toDate.clone().subtract(1, 'days')
+const loginUrl = process.env.LOGIN_URL
+const jsonUrl = `${process.env.JSON_URL}?mentioned_after=${fromDate.format('YYYY-MM-DD')}&mentioned_before=${toDate.format('YYYY-MM-DD')}`
+let pageNumber = 1
+let page
+let browser
 console.log(`-- DATES: ${fromDate.format('YYYY-MM-DD')} - ${toDate.format('YYYY-MM-DD')}`);
 
+// shit starts here
+
 (async () => {
-  const scrape = async () => {
-    // GET ALL MENTIONS
-    const content = await page.content()
-    let $
-    if (content && content.length > 0) {
-      console.log(`-- GOT CONTENT ...`)
-      $ = cheerio.load(content)
-    } else {
-      console.log(`-- NO CONTENT?!`)
-    }
-    const items = $('div.Mentions-Post')
-    console.log(`-- ${items.length} ITEMS FOUND.`)
-    items.each(function (i, elt) {
-      const datetime = $('div.timestamp time', $(this)).attr('datetime')
-      // div.post-content div.title
-      const title = $('div.post-content div.title', $(this)).text()
-      const sourceName = $('div.source span', $(this)).text()
-      const tweetLink = $('div.post-content a', $(this)).attr('href')
-      const abstract = $('div.abstract', $(this)).text()
-      const pubTitle = $('div.output-content a.Mentions-Output span.main', $(this)).text()
-      const pubSource = $('div.output-content a.Mentions-Output span.source span', $(this)).text()
-      const result = {
-        datetime,
-        sourceName,
-        tweetLink,
-        abstract,
-        pubTitle,
-        pubSource
-      }
-      if (title.length > 0) result.title = title
-      results.push(result)
-    })
-  }
-  const navigateToNextPage = async () => {
-    // ATTEMPT TO NAVIGATE TO NEXT PAGE
-    console.log('-- NEXT PAGE ...?')
-    const nextPage = await page.$('a.next')
-    if (nextPage) {
-      console.log('-- THERE IS ONE!')
-      await nextPage.click()
-      await page.waitForNavigation()
-      // await page.waitForXPath('//a.previous[2]')
-      return true
-    } else {
-      console.log('-- NO NEXT PAGE FOUND.')
+  // get JSON content
+  const getJson = async (pageNumber) => {
+    console.log(`-- RETRIEVING ${jsonUrl}&page=${pageNumber} ...`)
+    await page.goto(`${jsonUrl}&page=${pageNumber}`)
+    const jsonContent = await page.content()
+    if (!jsonContent) {
+      console.log(`-- NO JSON CONTENT FOUND`)
       return false
     }
+    const $ = await cheerio.load(jsonContent)
+    const json = await JSON.parse($('pre').text())
+    const items = json.data[0][1]
+    console.log(`SOME JSON: ${JSON.stringify(items).substring(0, 200)}`)
+    results = results.concat(items)
+    console.log(`-- RESULTS HAS NOW ${results.length} ITEMS`)
+    return !json.lastPage
   }
 
-  const browser = await puppeteer.launch({
-    headless: false
-    // slowMo: 50
+  // create an HTML file that will later be converted to PDF
+  const createHTMLFile = async (items) => {
+    const from = fromDate.format('D MMM')
+    const to = toDate.format('D MMM YYYY')
+    let mentionsList = ''
+    items.reverse()
+    items.forEach((item) => {
+      let type = ''
+      switch (item.postType) {
+        case 'tweet': type = 'Tweet by'; break
+        case 'msm': type = 'News story by'; break
+        case 'wikipedia': type = 'Wikipedia citation'; break
+        case 'blog': type = 'Blog entry by'; break
+        default: type = 'Mention'
+      }
+      mentionsList = mentionsList + `<li>
+      ${type}
+      ${item.profileName || ''}:
+      ${item.title ? item.tile + ' - ' : ''}
+      <a href='${item.url}'>${item.body.length > 500
+    ? item.body.substring(0, 400) + ' ...'
+    : item.body}</a>
+       at ${moment(item.postedAt).format('HH:mm')}.
+       Mentions the ${item.outputs[0].outputType} <a href='${process.env.ALTMETRIC_DETAILS_URL}=${item.outputs[0].id}'>
+       ${item.outputs[0].title}</a>
+       published
+       ${moment(item.outputs[0].pubdate).format('D MMM YYYY')}
+      </li>`
+    })
+    return `<html>
+<head><style type='text/css'>
+li {
+  padding-bottom: 0.5em;
+}
+</style></head>
+<body><h1>${items.length} mentions for the period of ${from} to ${to}</h1>
+<ol>
+  ${mentionsList}
+</ol>
+</body></html>`
+  }
+
+  const saveAsPDF = async (fileName) => {
+    page = await browser.newPage()
+    const pathName = `file://${path.join(__dirname, fileName)}`
+    console.log(`-- OPENING: ${pathName}`)
+    const res = await page.goto(pathName, {
+      waitUntil: 'networkidle0'
+    })
+    if (!res) {
+      console.log(`-- ERROR WHILE LOADING LOCAL FILE`)
+    }
+    console.log(`-- NOW ATTEMPTING TO SAVE PDF to file://${path.join(__dirname, 'mentions.pdf')}`)
+    await page.pdf({
+      path: `file:${path.join(__dirname, 'mentions.pdf')}`,
+      format: 'A4'
+    })
+  }
+  // launch the process
+  browser = await puppeteer.launch({
+    headless: false,
+    slowMo: 50
   })
-  const page = await browser.newPage()
-  await page.goto(url)
+  page = await browser.newPage()
+  await page.goto(loginUrl)
   // LOGIN
   console.log('-- ON LOGIN PAGE')
   await page.type('#email', process.env.LOGIN, {delay: 5})
@@ -76,20 +111,22 @@ console.log(`-- DATES: ${fromDate.format('YYYY-MM-DD')} - ${toDate.format('YYYY-
   ])
   console.log('-- LOGGED IN')
 
-  // TODO: CHECK THAT THERE IS CONTENT AT ALL!
-
-  // GET MENTIONS
+  // COLLECT MENTIONS
   while (true) {
     console.log('-- NOW SCRAPING ...')
-    await scrape()
-    const nextPage = await navigateToNextPage()
-    console.log(`-- AFTER navigateToNextPage: ${nextPage}`)
+    // await scrape()
+    const nextPage = await getJson(pageNumber)
+    // const nextPage = await navigateToNextPage()
+    // console.log(`-- AFTER navigateToNextPage: ${nextPage}`)
     if (!nextPage) break
+    else pageNumber = pageNumber + 1
   }
   console.log(`-- BEFORE SAVE: RESULTS NOW HAS ${results.length} ITEMS`)
-  fs.writeFile('data.json', JSON.stringify(results), (err) => {
+  const fileContents = await createHTMLFile(results)
+  fs.writeFile('mentions.html', fileContents, async (err) => {
     if (err) throw new Error()
-    console.log(`-- SAVED data.json successfully.`)
+    console.log(`-- SAVED mentions.html successfully.`)
+    await saveAsPDF('mentions.html')
   })
   await browser.close()
 })()

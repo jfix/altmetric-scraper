@@ -3,7 +3,7 @@ Process description
 using puppeteer
 * attempt to login (test whether we're already logged in)
 
-using request (?)
+using puppeteer page.goto()
 * then get first json_data page (use mentioned_after and mentioned_before)
 * add all objects in the array inside the data object to results
 * check for presence of "lastPage": true (or false)
