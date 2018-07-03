@@ -61,13 +61,13 @@ console.log(`-- DATES: ${fromDate.format('YYYY-MM-DD')} - ${toDate.format('YYYY-
   }
 
   const browser = await puppeteer.launch({
-    // headless: false
+    headless: false
     // slowMo: 50
   })
   const page = await browser.newPage()
   await page.goto(url)
-  console.log('-- ON LOGIN PAGE')
   // LOGIN
+  console.log('-- ON LOGIN PAGE')
   await page.type('#email', process.env.LOGIN, {delay: 5})
   await page.type('#password', process.env.PASSWORD, {delay: 5})
   await Promise.all([
