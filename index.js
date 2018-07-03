@@ -70,7 +70,7 @@ console.log(`-- DATES: ${fromDate.format('YYYY-MM-DD')} - ${toDate.format('YYYY-
   // LOGIN
   await page.type('#email', process.env.LOGIN, {delay: 5})
   await page.type('#password', process.env.PASSWORD, {delay: 5})
-  Promise.all([
+  await Promise.all([
     page.click('input[type=submit]'),
     page.waitForNavigation()
   ])
