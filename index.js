@@ -102,10 +102,11 @@ body {
       format: 'A4'
     })
   }
+
   // launch the process
   browser = await puppeteer.launch({
-    headless: false,
-    slowMo: 50
+    // headless: true,
+    // slowMo: 50
   })
   page = await browser.newPage()
   await page.goto(loginUrl)
