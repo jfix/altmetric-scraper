@@ -86,12 +86,6 @@ body {
 </body></html>`
   }
 
-  const saveAsPDF = async (fileName) => {
-    page = await browser.newPage()
-    const pathName = `file://${path.join(__dirname, fileName)}`
-    console.log(`-- OPENING: ${pathName}`)
-    const res = await page.goto(pathName, {
-      waitUntil: 'networkidle0'
   const saveJson = async (json) => {
     const fileName = `./data/mentions-${fromDate.format('YYYY-MM-DD')}.json`
     await fs.writeFile(fileName, JSON.stringify(json, {}, 2), (err) => {
@@ -99,6 +93,20 @@ body {
       console.log(`-- SAVED ${fileName}.`)
     })
   }
+
+  const saveAsPDF = async (fileContents) => {
+    const fileName = `./data/mentions-${fromDate.format('YYYY-MM-DD')}.pdf`
+    const newPage = await browser.newPage()
+    await newPage.setContent(fileContents)
+    await newPage.pdf({
+      path: fileName,
+      format: 'A4',
+      margin: {
+        top: '1.5cm',
+        right: '1cm',
+        bottom: '1.5cm',
+        left: '2.5cm'
+      }
     })
   }
 
@@ -128,11 +136,7 @@ body {
   }
   console.log(`-- BEFORE SAVE: RESULTS NOW HAS ${results.length} ITEMS`)
   const fileContents = await createHTMLFile(results)
-  fs.writeFile('mentions.html', fileContents, async (err) => {
-    if (err) throw new Error()
-    console.log(`-- SAVED mentions.html successfully.`)
-    await saveAsPDF('mentions.html')
-  })
   await saveJson(results)
+  await saveAsPDF(fileContents)
   await browser.close()
 })()
