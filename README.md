@@ -1,17 +1,25 @@
-Process description
+# Goal of the script
 
-using puppeteer
+Scrape information from Altmetric Explorer site (requires an account) by using the JSON data the site uses internally for displaying the information.
+
+Then, create a new HTML page and save this as a PDF. Because this is what the business wants, apparently.
+
+## How it works behind the scenes
+
+Using puppeteer
+
 * attempt to login (test whether we're already logged in)
 
-using puppeteer page.goto()
+Using puppeteer `page.goto()`
+
 * then get first json_data page (use mentioned_after and mentioned_before)
 * add all objects in the array inside the data object to results
 * check for presence of "lastPage": true (or false)
 * get next page if not lastPage
 
-using puppeteer
+Using puppeteer `page.setContent` and `page.pdf`
+
 * create a new page
 * loop over results array
-* dump data into the page that gets saved locally (or not)
-* https://stackoverflow.com/questions/47587352/opening-local-html-file-using-puppeteer
-* save generated HTML page as PDF (not rocket science https://gist.github.com/adisetiawan/29ba2bab10ed85706f8b1d1a8eceb825)
+* dump data into that page HTML
+* save generated HTML page as PDF
