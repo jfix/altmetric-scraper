@@ -52,23 +52,31 @@ console.log(`-- DATES: ${fromDate.format('YYYY-MM-DD')} - ${toDate.format('YYYY-
         default: type = 'Mention'
       }
       mentionsList = mentionsList + `<li>
-      ${type}
-      ${item.profileName || ''}:
-      ${item.title ? item.tile + ' - ' : ''}
-      <a href='${item.url}'>${item.body.length > 500
+      ${moment(item.postedAt).format('HH:mm')}
+      <em>${type}</em>
+      <strong>${item.profileName || ''}</strong>:
+      ${item.title ? item.title + ' - ' : ''}
+      <a href='${item.url}'>${item.body && item.body.length > 500
     ? item.body.substring(0, 400) + ' ...'
-    : item.body}</a>
-       at ${moment(item.postedAt).format('HH:mm')}.
+    : item.body}</a> -
        Mentions the ${item.outputs[0].outputType} <a href='${process.env.ALTMETRIC_DETAILS_URL}=${item.outputs[0].id}'>
        ${item.outputs[0].title}</a>
-       published
-       ${moment(item.outputs[0].pubdate).format('D MMM YYYY')}
+
+       ${item.outputs[0].pubdate ? 'published ' + moment(item.outputs[0].pubdate).format('D MMM YYYY') : ''}
       </li>`
     })
+    console.log(`-- GENERATED HTML`)
     return `<html>
 <head><style type='text/css'>
+ol {
+  list-style-type: none;
+}
 li {
   padding-bottom: 0.5em;
+  text-indent: -3em; margin-left: 3em;
+}
+body {
+  font-size: smaller;
 }
 </style></head>
 <body><h1>${items.length} mentions for the period of ${from} to ${to}</h1>
