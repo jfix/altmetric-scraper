@@ -123,10 +123,7 @@ body {
   // COLLECT MENTIONS
   while (true) {
     console.log('-- NOW SCRAPING ...')
-    // await scrape()
     const nextPage = await getJson(pageNumber)
-    // const nextPage = await navigateToNextPage()
-    // console.log(`-- AFTER navigateToNextPage: ${nextPage}`)
     if (!nextPage) break
     else pageNumber = pageNumber + 1
   }
