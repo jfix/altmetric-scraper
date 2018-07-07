@@ -92,14 +92,13 @@ body {
     console.log(`-- OPENING: ${pathName}`)
     const res = await page.goto(pathName, {
       waitUntil: 'networkidle0'
+  const saveJson = async (json) => {
+    const fileName = `./data/mentions-${fromDate.format('YYYY-MM-DD')}.json`
+    await fs.writeFile(fileName, JSON.stringify(json, {}, 2), (err) => {
+      if (err) throw new Error()
+      console.log(`-- SAVED ${fileName}.`)
     })
-    if (!res) {
-      console.log(`-- ERROR WHILE LOADING LOCAL FILE`)
-    }
-    console.log(`-- NOW ATTEMPTING TO SAVE PDF to file://${path.join(__dirname, 'mentions.pdf')}`)
-    await page.pdf({
-      path: `file:${path.join(__dirname, 'mentions.pdf')}`,
-      format: 'A4'
+  }
     })
   }
 
@@ -134,5 +133,6 @@ body {
     console.log(`-- SAVED mentions.html successfully.`)
     await saveAsPDF('mentions.html')
   })
+  await saveJson(results)
   await browser.close()
 })()
