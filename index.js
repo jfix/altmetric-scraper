@@ -3,7 +3,6 @@ const puppeteer = require('puppeteer')
 const moment = require('moment')
 const cheerio = require('cheerio')
 const fs = require('fs')
-const path = require('path')
 
 let results = []
 const toDate = moment().subtract(1, 'days') // if this is run around midnight ...
