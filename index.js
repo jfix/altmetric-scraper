@@ -3,6 +3,7 @@ const puppeteer = require('puppeteer')
 const moment = require('moment')
 const cheerio = require('cheerio')
 const fs = require('fs')
+const striptags = require('striptags')
 
 let results = []
 const toDate = moment().subtract(1, 'days') // if this is run around midnight ...
@@ -66,7 +67,7 @@ console.log(`-- DATES: ${fromDate.format('YYYY-MM-DD')} - ${toDate.format('YYYY-
       <strong>${item.profileName || ''}</strong>:
       ${item.title ? item.title + ' - ' : ''}
       <a href='${item.url}'>${item.body && item.body.length > 500
-    ? item.body.substring(0, 400) + ' ...'
+    ? striptags(item.body).substring(0, 400) + ' ...'
     : item.body}</a> -
        Mentions the ${item.outputs[0].outputType} <a href='${process.env.ALTMETRIC_DETAILS_URL}=${item.outputs[0].id}'>
        ${item.outputs[0].title}</a>
