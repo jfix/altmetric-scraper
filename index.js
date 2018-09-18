@@ -40,7 +40,16 @@ console.log(`-- DATES: ${fromDate.format('YYYY-MM-DD')} - ${toDate.format('YYYY-
     const from = fromDate.format('MMMM D, YYYY')
     //const to = toDate.format('D MMM YYYY')
     let mentionsList = ''
-    items.reverse()
+    // items.reverse()
+    items.sort((a, b) => {
+      const date1 = new Date(a.postedAt)
+      const date2 = new Date(b.postedAt)
+      if (date1 > date2){
+        return 1
+      } else {
+        return -1
+      }
+    })
     items.forEach((item) => {
       console.log(`DATE: ${item.postedAt}.`)
       let type = ''
