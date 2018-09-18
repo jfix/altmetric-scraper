@@ -6,7 +6,7 @@ const fs = require('fs')
 
 let results = []
 const toDate = moment().subtract(1, 'days') // if this is run around midnight ...
-const fromDate = toDate.clone().subtract(1, 'days')
+const fromDate = toDate.clone() //.subtract(1, 'days')
 const loginUrl = process.env.LOGIN_URL
 const jsonUrl = `${process.env.JSON_URL}?mentioned_after=${fromDate.format('YYYY-MM-DD')}&mentioned_before=${toDate.format('YYYY-MM-DD')}`
 let pageNumber = 1
@@ -37,11 +37,12 @@ console.log(`-- DATES: ${fromDate.format('YYYY-MM-DD')} - ${toDate.format('YYYY-
 
   // create an HTML file that will later be converted to PDF
   const createHTMLFile = async (items) => {
-    const from = fromDate.format('D MMM')
-    const to = toDate.format('D MMM YYYY')
+    const from = fromDate.format('MMMM D, YYYY')
+    //const to = toDate.format('D MMM YYYY')
     let mentionsList = ''
     items.reverse()
     items.forEach((item) => {
+      console.log(`DATE: ${item.postedAt}.`)
       let type = ''
       switch (item.postType) {
         case 'tweet': type = 'Tweet by'; break
@@ -78,7 +79,7 @@ body {
   font-size: smaller;
 }
 </style></head>
-<body><h1>${items.length} mentions for the period of ${from} to ${to}</h1>
+<body><h1>${items.length} mentions for ${from}</h1>
 <ol>
   ${mentionsList}
 </ol>
