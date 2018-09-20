@@ -88,12 +88,23 @@ li {
 body {
   font-size: smaller;
 }
+p.intro {
+  color: #eeeeee;
+}
 </style></head>
-<body><h1>${items.length} mentions for ${from}</h1>
+<body><h1>${items.length} mentions of OECD publications in social media for ${from}</h1>
+<p class='intro'>This list is compiled daily from <a href='https://www.altmetric.com/'>Altmetric data</a>
+and is based on mentions of <a href='https://en.wikipedia.org/wiki/Digital_object_identifier'>DOIs</a> in
+Social Media. 'Social Media' in this context includes Tweets, Blog entries, News stories and sometimes even
+Wikipedia edits. It was generated at ${moment().format('H:mm')} on
+${moment().format('D MMMM YYYY')}.</p>
+
 <ol>
   ${mentionsList}
 </ol>
-</body></html>`
+
+</body>
+</html>`
   }
 
   const saveJson = async (json) => {
