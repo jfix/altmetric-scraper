@@ -62,6 +62,13 @@ console.log(`-- DATES: ${fromDate.format('YYYY-MM-DD')} - ${toDate.format('YYYY-
         default: type = 'Mention'
       }
       mentionsList = mentionsList + `<li>
+      <div>
+      <a href='${process.env.ALTMETRIC_DETAILS_URL}=${item.outputs[0].id}'>
+      <div class="fake-badge">
+      ${item.outputs[0].score || '?'}
+      </div>
+      </a>
+      <div>
       ${moment(item.postedAt).format('HH:mm')}
       <em>${type}</em>
       <strong>${item.profileName || ''}</strong>:
@@ -75,11 +82,28 @@ console.log(`-- DATES: ${fromDate.format('YYYY-MM-DD')} - ${toDate.format('YYYY-
        ${item.outputs[0].title}</a>
 
        ${item.outputs[0].pubdate ? 'published ' + moment(item.outputs[0].pubdate).format('D MMM YYYY') : ''}
+       </div>
+       </div>
       </li>`
     })
     console.log(`-- GENERATED HTML`)
     return `<html>
-<head><style type='text/css'>
+<head>
+<style type='text/css'>
+.fake-badge {
+  width: 40px;
+  height:  40px;
+  float: right;
+  background-color: lightblue;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 18px;
+  border-radius: 20px;
+  text-align: center;
+  line-height: 40px;
+  text-indent: 0;
+  margin-left: 0;
+}
 ol {
   list-style-type: none;
 }
@@ -89,17 +113,20 @@ li {
 }
 body {
   font-size: smaller;
+  font-family: Arial, Helvetica, sans-serif;
 }
 p.intro {
-  color: #eeeeee;
+  color: #A9A9A9;
 }
-</style></head>
+</style>
+</head>
 <body><h1>${items.length} mentions of OECD publications in social media for ${from}</h1>
 <p class='intro'>This list is compiled daily from <a href='https://www.altmetric.com/'>Altmetric data</a>
 and is based on mentions of <a href='https://en.wikipedia.org/wiki/Digital_object_identifier'>DOIs</a> in
 Social Media. 'Social Media' in this context includes Tweets, Blog entries, News stories and sometimes even
-Wikipedia edits. It was generated at ${moment().format('H:mm')} on
-${moment().format('D MMMM YYYY')}.</p>
+Wikipedia edits. The blue circle next to each mention indicates the number of times the respective publications
+was shared on Social Media. Clicking on it will provide further details. This list was generated at
+${moment().format('H:mm')} on ${moment().format('D MMMM YYYY')}.</p>
 
 <ol>
   ${mentionsList}
@@ -133,6 +160,7 @@ ${moment().format('D MMMM YYYY')}.</p>
     const newPage = await browser.newPage()
     await newPage.setContent(fileContents)
     await newPage.pdf({
+      printBackground: true,
       path: fileName,
       format: 'A4',
       margin: {
