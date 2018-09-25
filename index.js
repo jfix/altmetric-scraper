@@ -117,6 +117,17 @@ ${moment().format('D MMMM YYYY')}.</p>
     })
   }
 
+
+  const saveAsHTML = async (fileContents) => {
+    const fileName = `./data/mentions-${fromDate.format('YYYY-MM-DD')}.html`
+    const newPage = await browser.newPage()
+    await newPage.setContent(fileContents)
+    await fs.writeFile(fileName, fileContents, (err) => {
+      if (err) throw new Error()
+      console.log(`-- SAVE ${fileName}`)
+    })
+  }
+
   const saveAsPDF = async (fileContents) => {
     const fileName = `./data/mentions-${fromDate.format('YYYY-MM-DD')}.pdf`
     const newPage = await browser.newPage()
@@ -160,6 +171,7 @@ ${moment().format('D MMMM YYYY')}.</p>
   console.log(`-- BEFORE SAVE: RESULTS NOW HAS ${results.length} ITEMS`)
   const fileContents = await createHTMLFile(results)
   await saveJson(results)
+  await saveAsHTML(fileContents)
   await saveAsPDF(fileContents)
   await browser.close()
 })()
