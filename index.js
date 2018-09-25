@@ -66,9 +66,11 @@ console.log(`-- DATES: ${fromDate.format('YYYY-MM-DD')} - ${toDate.format('YYYY-
       <em>${type}</em>
       <strong>${item.profileName || ''}</strong>:
       ${item.title ? item.title + ' - ' : ''}
-      <a href='${item.url}'>${item.body && item.body.length > 500
-    ? striptags(item.body).substring(0, 400) + ' ...'
-    : item.body}</a> -
+      <a href='${item.url}'>
+        ${item.body && item.body.length > 500
+          ? striptags(item.body).substring(0, 400) + ' ...'
+          : item.body}
+      </a> -
        Mentions the ${item.outputs[0].outputType} <a href='${process.env.ALTMETRIC_DETAILS_URL}=${item.outputs[0].id}'>
        ${item.outputs[0].title}</a>
 
