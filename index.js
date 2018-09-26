@@ -1,8 +1,8 @@
 require('dotenv').config({path: '_env'})
-const puppeteer = require('puppeteer')
-const moment = require('moment')
 const cheerio = require('cheerio')
 const fs = require('fs')
+const moment = require('moment')
+const puppeteer = require('puppeteer')
 const striptags = require('striptags')
 
 let results = []
