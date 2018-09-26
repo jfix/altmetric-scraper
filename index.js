@@ -102,7 +102,7 @@ console.log(`-- DATES: ${fromDate.format('YYYY-MM-DD')} - ${toDate.format('YYYY-
   text-align: center;
   line-height: 40px;
   text-indent: 0;
-  margin-left: 0;
+  margin-left: 0.5em;
 }
 ol {
   list-style-type: none;
